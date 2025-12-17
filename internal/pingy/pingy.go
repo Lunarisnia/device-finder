@@ -1,6 +1,8 @@
 package pingy
 
 import (
+	"time"
+
 	probing "github.com/prometheus-community/pro-bing"
 )
 
@@ -9,6 +11,7 @@ func Ping(addr string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
+	pinger.Timeout = 5 * time.Second
 	pinger.Count = 5
 	err = pinger.Run()
 	if err != nil {
