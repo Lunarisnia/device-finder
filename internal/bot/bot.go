@@ -73,7 +73,10 @@ func Run(ctx tinycli.Context) error {
 			status.connected = true
 			status.lastSeen = time.Now()
 			sendNotification(dg, discordId, fmt.Sprintf("Your boyfriend is home! (Arrived at: %s)", status.lastSeen.Format(time.RFC850)))
+		} else if receivedPacket > 0 && status.connected {
+			status.lastSeen = time.Now()
 		}
+
 		fmt.Println("Sleeping for 5 seconds")
 		time.Sleep(5 * time.Second)
 	}
