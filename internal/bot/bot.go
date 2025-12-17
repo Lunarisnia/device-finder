@@ -59,22 +59,27 @@ func Run(ctx tinycli.Context) error {
 	}()
 
 	status.connected = true
-	status.lastSeen = time.Now()
+	jakartaLocation, err := time.LoadLocation("Asia/Jakarta")
+	if err != nil {
+		return err
+	}
+	status.lastSeen = time.Now().In(jakartaLocation)
 	for {
 		fmt.Println("Starting Notification sequence")
 		receivedPacket, err := pingy.Ping(deviceAddr)
 		if err != nil {
 			log.Println(err)
 		}
-		if receivedPacket == 0 && status.connected && time.Since(status.lastSeen).Minutes() >= threshold {
+		passed := time.Now().In(jakartaLocation).Sub(status.lastSeen)
+		if receivedPacket == 0 && status.connected && passed.Minutes() >= threshold {
 			status.connected = false
 			sendNotification(dg, discordId, fmt.Sprintf("Your boyfriend is away from home! (Left at: %s)", status.lastSeen.Format(time.RFC850)))
 		} else if receivedPacket > 0 && !status.connected {
 			status.connected = true
-			status.lastSeen = time.Now()
+			status.lastSeen = time.Now().In(jakartaLocation)
 			sendNotification(dg, discordId, fmt.Sprintf("Your boyfriend is home! (Arrived at: %s)", status.lastSeen.Format(time.RFC850)))
 		} else if receivedPacket > 0 && status.connected {
-			status.lastSeen = time.Now()
+			status.lastSeen = time.Now().In(jakartaLocation)
 		}
 
 		fmt.Println("Sleeping for 5 seconds")
